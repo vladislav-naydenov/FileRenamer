@@ -15,6 +15,9 @@ namespace FileRenamer
     {
         private readonly ObservableCollection<string> fileNames;
         private const string templateRegex = "S(\\d+){0}(\\d+)";
+        private const string renameReport = "RenameReport.txt";
+
+        public string CurrentPath { get; set; }
 
         public MainWindow()
         {
@@ -38,6 +41,7 @@ namespace FileRenamer
 
             PopulateFileNames(newPath);
             this.Rename.IsEnabled = true;
+            this.CurrentPath = newPath;
         }
 
         [SuppressMessage("ReSharper", "UnusedMember.Global")]
@@ -106,7 +110,30 @@ namespace FileRenamer
 
         private void WriteToReportFile(string path, string oldFileName, string newFilename)
         {
-            File.AppendAllText($"{path}\\RenameReport.txt", $@"{oldFileName} -> {newFilename}{Environment.NewLine}");
+            File.AppendAllText($"{path}\\{renameReport}", $@"{oldFileName} -> {newFilename}{Environment.NewLine}");
+        }
+
+        private void RollbackNames(object sender, RoutedEventArgs e)
+        {
+            var renameReportPath = $"{this.CurrentPath}\\{renameReport}";
+
+            if (!File.Exists(renameReportPath))
+            {
+                MessageBox.Show($"Couldn't find file {renameReportPath}", "Error", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+
+            var renameInfo = File.ReadAllLines(renameReportPath);
+
+            foreach (var line in renameInfo)
+            {
+                var renameData = line.Split(new [] { "->" }, StringSplitOptions.None);
+                
+                var originalName = renameData[0].Trim();
+                var currentName = renameData[1].Trim();
+
+                File.Move($"{this.CurrentPath}\\{currentName}", $"{this.CurrentPath}\\{originalName}");
+            }
         }
 
         private void PopulateFileNames(string path)
