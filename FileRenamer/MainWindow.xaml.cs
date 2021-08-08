@@ -79,21 +79,51 @@ namespace FileRenamer
 
         private void RenameFiles(IEnumerable<FileInfo> fileInfos, Regex seasonEpisodeRegex, bool isSubtitles)
         {
-            var subtitlesLang = isSubtitles ? ".bg" : "";
+            if (this.Suffix.IsEnabled)
+            {
+                this.RenameFiles(fileInfos);
+            }
+            else
+            {
+                var subtitlesLang = isSubtitles ? ".bg" : "";
 
+                foreach (var file in fileInfos)
+                {
+                    var match = seasonEpisodeRegex.Match(file.Name);
+
+                    if (!match.Success)
+                    {
+                        continue;
+                    }
+
+                    var season = int.Parse(match.Groups[match.Groups.Count - 2].Value);
+                    var episode = match.Groups[match.Groups.Count - 1].Value;
+                    var newFileFullName =
+                        file.FullName.Replace(file.Name,
+                            $"{NewName.Text} {season}{episode}{subtitlesLang}{file.Extension}");
+                    var newFileName = newFileFullName.Split(new[] {"\\"}, StringSplitOptions.RemoveEmptyEntries).Last();
+                    try
+                    {
+                        File.Move(file.FullName, newFileFullName);
+                    }
+                    catch (IOException e)
+                    {
+                        MessageBox.Show($"Rename of file {file.Name} failed due to an error: {e.Message}", "Error",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+
+                    WriteToReportFile(file.DirectoryName, file.Name, newFileName);
+                }
+            }
+        }
+
+        private void RenameFiles(IEnumerable<FileInfo> fileInfos)
+        {
             foreach (var file in fileInfos)
             {
-                var match = seasonEpisodeRegex.Match(file.Name);
-
-                if (!match.Success)
-                {
-                    continue;
-                }
-
-                var season = int.Parse(match.Groups[match.Groups.Count - 2].Value);
-                var episode = match.Groups[match.Groups.Count - 1].Value;
                 var newFileFullName =
-                    file.FullName.Replace(file.Name, $"{NewName.Text} {season}{episode}{subtitlesLang}{file.Extension}");
+                    file.FullName.Replace(file.Name,
+                        $"{Path.GetFileNameWithoutExtension(file.Name)}{Suffix.Text}{file.Extension}");
                 var newFileName = newFileFullName.Split(new[] { "\\" }, StringSplitOptions.RemoveEmptyEntries).Last();
                 try
                 {
@@ -101,7 +131,8 @@ namespace FileRenamer
                 }
                 catch (IOException e)
                 {
-                    MessageBox.Show($"Rename of file {file.Name} failed due to an error: {e.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"Rename of file {file.Name} failed due to an error: {e.Message}", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
                 }
 
                 WriteToReportFile(file.DirectoryName, file.Name, newFileName);
@@ -143,6 +174,13 @@ namespace FileRenamer
             {
                 fileNames.Add(file);
             }
+        }
+
+        private void OnlySuffix_OnChecked(object sender, RoutedEventArgs e)
+        {
+            this.Suffix.IsEnabled = true;
+            this.RegexString.IsEnabled = false;
+            this.NewName.IsEnabled = false;
         }
     }
 }

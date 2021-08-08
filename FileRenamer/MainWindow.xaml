@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="558.616" Width="722.74">
     <Grid>
-        <ListView x:Name="FilesListView" HorizontalAlignment="Left" Height="366" Margin="49,144,0,0" VerticalAlignment="Top" Width="597" ItemsSource="{Binding Path=FileNames}">
+        <ListView x:Name="FilesListView" HorizontalAlignment="Left" Height="321" Margin="49,189,0,0" VerticalAlignment="Top" Width="597" ItemsSource="{Binding Path=FileNames}">
             <ListView.View>
                 <GridView>
                     <GridViewColumn/>
@@ -41,6 +41,17 @@
         </TextBox>
         <Label Content="New name" HorizontalAlignment="Left" Margin="49,52,0,0" VerticalAlignment="Top" Width="68"/>
         <Button x:Name="Rollback" Content="Rollback names" HorizontalAlignment="Left" Margin="561,74,0,0" VerticalAlignment="Top" Width="85" Click="RollbackNames"/>
+        <TextBox x:Name="Suffix" HorizontalAlignment="Left" Height="23" Margin="161,140,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="379" RenderTransformOrigin="0.494,0.501" IsEnabled="False">
+            <TextBox.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="-0.012"/>
+                    <TranslateTransform Y="0.002"/>
+                </TransformGroup>
+            </TextBox.RenderTransform>
+        </TextBox>
+        <CheckBox x:Name="OnlySuffix" Content="Only suffix?" HorizontalAlignment="Left" Margin="36,144,0,0" VerticalAlignment="Top" Checked="OnlySuffix_OnChecked"/>
 
     </Grid>
 </Window>
